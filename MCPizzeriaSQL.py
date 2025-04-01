@@ -64,7 +64,7 @@ def voegPizzasToe():
     cursor.execute("INSERT INTO tbl_pizzas VALUES(NULL, ?, ? )", ("Hawaii", 12.25))
     cursor.execute("INSERT INTO tbl_pizzas VALUES(NULL, ?, ? )", ("Salami", 10.00))
     printTabel("tbl_pizzas")
-   # db.commit() #gegevens naar de database wegschrijven
+    #db.commit() #gegevens naar de database wegschrijven
 
 
 #Zoek alle gegevens over klant met ingevoerde naam
@@ -119,7 +119,7 @@ def vraagOpGegevensWinkelWagenTabel():
 
 ### --------- Hoofdprogramma  ----------------
 maakNieuweTabellen()
-#voegPizzasToe()
-#voegKlantenToe()
+# voegPizzasToe()
+# voegKlantenToe()
 
 
