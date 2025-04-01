@@ -20,11 +20,11 @@ with sqlite3.connect("MCPizzeria.db") as db:
 def maakNieuweTabellen():
     # Maak een nieuwe tabel met 3 kolommen: id, naam, prijs
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS tbl_pizzas(
+        CREATE TABLE IF NOT EXISTS tbl_oefeningen(
             gerechtID INTEGER PRIMARY KEY AUTOINCREMENT,
             gerechtNaam TEXT NOT NULL,
             gerechtPrijs REAL NOT NULL);""")
-    print("Tabel 'tbl_pizzas' aangemaakt.")
+    print("Tabel 'tbl_oefeningen' aangemaakt.")
 
 
     cursor.execute("""
@@ -35,15 +35,15 @@ def maakNieuweTabellen():
 
 
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS tbl_winkelWagen(
+        CREATE TABLE IF NOT EXISTS tbl_Logboek(
         bestelRegel INTEGER PRIMARY KEY AUTOINCREMENT,
         klantNr INTEGER,
         gerechtID INTEGER,
         aantal INTEGER NOT NULL,
         FOREIGN KEY (klantNr) REFERENCES tbl_klanten(klantNr)
-        FOREIGN KEY (gerechtID) REFERENCES tbl_pizzas(gerechtID)
+        FOREIGN KEY (gerechtID) REFERENCES tbl_oefeningen(gerechtID)
         );""")
-    print("Tabel 'tbl_winkelWagen' aangemaakt.")
+    print("Tabel 'tbl_Logboek' aangemaakt.")
 
     #db.commit() # update de database
 
@@ -61,9 +61,9 @@ def voegKlantenToe():
     #db.commit() #gegevens naar de database wegschrijven
 
 def voegPizzasToe():
-    cursor.execute("INSERT INTO tbl_pizzas VALUES(NULL, ?, ? )", ("Hawaii", 12.25))
-    cursor.execute("INSERT INTO tbl_pizzas VALUES(NULL, ?, ? )", ("Salami", 10.00))
-    printTabel("tbl_pizzas")
+    cursor.execute("INSERT INTO tbl_oefeningen VALUES(NULL, ?, ? )", ("Bench Press"))
+    cursor.execute("INSERT INTO tbl_oefeningen VALUES(NULL, ?, ? )", ("Leg Press"))
+    printTabel("tbl_oefeningen")
     #db.commit() #gegevens naar de database wegschrijven
 
 
@@ -89,14 +89,14 @@ def zoekKlantInTabel(ingevoerde_klantnaam):
 
 
 def vraagOpGegevensPizzaTabel():
-    cursor.execute("SELECT * FROM tbl_pizzas")
+    cursor.execute("SELECT * FROM tbl_oefeningen")
     resultaat = cursor.fetchall()
-    print("Tabel tbl_pizzas:", resultaat)
+    print("Tabel tbl_oefeningen:", resultaat)
     return resultaat
 
 #Zoek alle gegevens over pizza met ingevoerde naam
 def zoekPizza(ingevoerde_pizzanaam):
-    cursor.execute("SELECT * FROM tbl_pizzas WHERE gerechtNaam = ?", ( ingevoerde_pizzanaam, ) )
+    cursor.execute("SELECT * FROM tbl_oefeningen WHERE gerechtNaam = ?", ( ingevoerde_pizzanaam, ) )
     zoek_resultaat = cursor.fetchall()
     if zoek_resultaat == []: #resultaat is leeg, geen gerecht gevonden
         print("Helaas, geen match gevonden met "+ ingevoerde_pizzanaam)
@@ -104,16 +104,16 @@ def zoekPizza(ingevoerde_pizzanaam):
         print("Pizza gevonden: ", zoek_resultaat )
     return zoek_resultaat
 
-def voegToeAanWinkelWagen(klantNr, gerechtID, aantal):
-    cursor.execute("INSERT INTO tbl_winkelWagen VALUES(NULL, ?, ?, ?)", (klantNr, gerechtID, aantal,))
+def voegToeAanLogboek(klantNr, gerechtID, aantal):
+    cursor.execute("INSERT INTO tbl_Logboek VALUES(NULL, ?, ?, ?)", (klantNr, gerechtID, aantal,))
     db.commit() #gegevens naar de database wegschrijven
-    printTabel("tbl_winkelWagen")
+    printTabel("tbl_Logboek")
 
 
-def vraagOpGegevensWinkelWagenTabel():
-    cursor.execute("SELECT * FROM tbl_winkelWagen")
+def vraagOpGegevensLogboekTabel():
+    cursor.execute("SELECT * FROM tbl_Logboek")
     resultaat = cursor.fetchall()
-    print("Tabel tbl_winkelWagen:", resultaat)
+    print("Tabel tbl_Logboek:", resultaat)
     return resultaat
 
 

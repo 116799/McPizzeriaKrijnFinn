@@ -37,9 +37,9 @@ def zoekPizza():
 
     #haal de ingevoerde_pizzanaam op
     #     en gebruik dit om met SQL gerecht in database te vinden
-    gezochte_pizzas = MCPizzeriaSQL.zoekPizza( ingevoerde_pizzanaam.get() )
-    for rij in gezochte_pizzas: #voor elke rij dat de query oplevert
-        listboxMenu.insert(END, rij) #toon die rij in de listbox
+    # gezochte_pizzas = MCPizzeriaSQL.zoekPizza( ingevoerde_pizzanaam.get() )
+    # for rij in gezochte_pizzas: #voor elke rij dat de query oplevert
+    #     listboxMenu.insert(END, rij) #toon die rij in de listbox
 
 
 def toonMenuInListbox():
@@ -57,27 +57,28 @@ def haalGeselecteerdeRijOp(event):
     #haal tekst uit die regel
     geselecteerdeTekst = listboxMenu.get(geselecteerdeRegelInLijst)
     #verwijder tekst uit veld waar je in wilt schrijven, voor het geval er al iets staat
-    invoerveldGeselecteerdePizza.delete(0, END)
+    invoerveldGeselecteerdeOefening.delete(0, END)
     #zet tekst in veld
-    invoerveldGeselecteerdePizza.insert(0, geselecteerdeTekst)
+    invoerveldGeselecteerdeOefening.insert(0, geselecteerdeTekst)
 
 
 #voeg de bestelling van klant met gekozen pizza en aantal toe
 #in de winkelwagentabel
 #en toon de bestelling in de listbox op het scherm
-def voegToeAanWinkelWagen():
+def voegToeAanLogboek():
     klantNr = invoerveldKlantNr.get()
-    gerechtID = geselecteerdePizza.get()
-    aantal = aantalGeslecteerdePizza.get()
+    gerechtID = geselecteerdeOefening.get()
+    aantalSets = aantalGeslecteerdeSets.get()
+    Gewicht = aantalGewicht.get()
 
-    MCPizzeriaSQL.voegToeAanWinkelWagen(klantNr, gerechtID, aantal )
+    MCPizzeriaSQL.voegToeAanLogboek(klantNr, gerechtID, aantalSets, Gewicht )
 
-    winkelwagen_tabel = MCPizzeriaSQL.vraagOpGegevensWinkelWagenTabel()
+    Logboek_tabel = MCPizzeriaSQL.vraagOpGegevensLogboekTabel()
 
-    listboxWinkelwagen.delete(0, END) #listbox eerst even leeg maken
+    listboxLogboek.delete(0, END) #listbox eerst even leeg maken
 
-    for regel in winkelwagen_tabel:
-        listboxWinkelwagen.insert(END, regel)
+    for regel in Logboek_tabel:
+        listboxLogboek.insert(END, regel)
 
 
 
@@ -85,10 +86,10 @@ def voegToeAanWinkelWagen():
 venster = Tk()
 venster.wm_title("MC Pizzeria")
 #venster.iconbitmap("MC_icon.ico")
-venster.config(bg="skyblue")
+venster.config(bg="lightblue")
 
 labelIntro = Label(venster, text="Welkom!")
-labelIntro.grid(row=0, column=0, sticky="W", padx=10, pady=5)
+labelIntro.grid(row=0, column=0, sticky="E", padx=10, pady=5)
 
 
 labelKlantnaam = Label(venster, text="Klantnaam")
@@ -112,14 +113,6 @@ knopZoekOpKlantnaam.grid(row=1, column=4)
 
 
 
-labelPizza = Label(venster, text="Pizzanaam:")
-labelPizza.grid(row=3, column=0, sticky="W")# sticky="W" zorgt dat tekst links uitgelijnd wordt
-
-
-ingevoerde_pizzanaam = StringVar()
-invoerveldPizzanaam = Entry(venster, textvariable=ingevoerde_pizzanaam)
-invoerveldPizzanaam.grid(row=3, column=1, columnspan=2, sticky="W")
-
 knopZoekOpPizzaNaam = Button(venster, text="Zoek pizza", width=12, command=zoekPizza)
 knopZoekOpPizzaNaam.grid(row=3, column=4)
 
@@ -140,37 +133,45 @@ scrollbarlistboxMenu.config(command=listboxMenu.yview)
 knopToonPizzas = Button(venster, text="Toon alle pizza's", width=12, command=toonMenuInListbox)
 knopToonPizzas.grid(row=4, column=4)
 
-labelinvoerveldSelecteerdePizza = Label(venster, text="Gekozen pizza:")
-labelinvoerveldSelecteerdePizza.grid(row=11, column=0, sticky="W")
+labelinvoerveldSelecteerdeOefening = Label(venster, text="Gekozen Oefening:")
+labelinvoerveldSelecteerdeOefening.grid(row=11, column=0, sticky="W")
 
-geselecteerdePizza= StringVar()
-invoerveldGeselecteerdePizza = Entry(venster, textvariable=geselecteerdePizza)
-invoerveldGeselecteerdePizza.grid(row=11, column=1, columnspan=2, sticky="W")
+geselecteerdeOefening= StringVar()
+invoerveldGeselecteerdeOefening = Entry(venster, textvariable=geselecteerdeOefening)
+invoerveldGeselecteerdeOefening.grid(row=11, column=1, columnspan=2, sticky="W")
 
 
 ### KIES AANTAL VAN DE GESELECTEERDE PIZZA
-labelAantalGeselecteerd = Label(venster, text="Aantal:")
-labelAantalGeselecteerd.grid(row=12, column=0, sticky="W")
+labelAantalSetsGeselecteerd = Label(venster, text="Aantal:")
+labelAantalSetsGeselecteerd.grid(row=13, column=0, sticky="W")
 
-aantalGeslecteerdePizza = IntVar() #het is een getal
-aantalGeslecteerdePizza.set(1) #eerste standaard waarde
-optionMenuPizzaAantal = OptionMenu(venster, aantalGeslecteerdePizza, 0,1,2,3,4,5,6,7,8)
-optionMenuPizzaAantal.grid(row=12, column=1, sticky="W")
+labelGewichtGeselecteerd = Label(venster, text="Gewicht (Kg):")
+labelGewichtGeselecteerd.grid(row=13, column=1, sticky="W")
 
-knopVoegToeAanWinkelWagen = Button(venster, text="Voeg toe", width=12, command=voegToeAanWinkelWagen)
-knopVoegToeAanWinkelWagen.grid(row=12, column=4)
+aantalGewicht = IntVar() #het is een getal
+aantalGewicht.set(1) #eerste standaard waarde
+optionMenuGewichtAantal = OptionMenu(venster, aantalGewicht, 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80)
+optionMenuGewichtAantal.grid(row=14, column=1, sticky="n")
+
+aantalGeslecteerdeSets = IntVar() #het is een getal
+aantalGeslecteerdeSets.set(1) #eerste standaard waarde
+optionMenuSetsAantal = OptionMenu(venster, aantalGeslecteerdeSets, 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30)
+optionMenuSetsAantal.grid(row=13, column=0, sticky="E")
+
+knopVoegToeAanLogboek = Button(venster, text="Voeg toe", width=12, command=voegToeAanLogboek)
+knopVoegToeAanLogboek.grid(row=13, column=4)
 
 
-labellistboxWinkelwagen = Label(venster, text="Bestelling:")
-labellistboxWinkelwagen.grid(row=13, column=0, sticky="W")# zorgt dat tekst links uitgelijnd wordt
+labellistboxLogboek = Label(venster, text="logboek:")
+labellistboxLogboek.grid(row=15, column=0, sticky="W")# zorgt dat tekst links uitgelijnd wordt
 
 
-listboxWinkelwagen = Listbox(venster, height=6, width=45)
-listboxWinkelwagen.grid(row=13, column=1, rowspan=4, columnspan=2, sticky="W")
-listboxWinkelwagen.bind('<<ListboxSelect>>')
+listboxLogboek = Listbox(venster, height=6, width=45)
+listboxLogboek.grid(row=15, column=1, rowspan=4, columnspan=2, sticky="W")
+listboxLogboek.bind('<<ListboxSelect>>')
 
 knopSluit = Button(venster, text="Sluiten",width=12,command=venster.destroy)
-knopSluit.grid(row=17, column = 4)
+knopSluit.grid(row=18, column = 4)
 
 
 # fotoPad = "fotoPepperoni.png"
