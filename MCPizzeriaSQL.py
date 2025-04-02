@@ -22,8 +22,7 @@ def maakNieuweTabellen():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS tbl_oefeningen(
             gerechtID INTEGER PRIMARY KEY AUTOINCREMENT,
-            gerechtNaam TEXT NOT NULL,
-            gerechtPrijs REAL NOT NULL);""")
+            Oefening TEXT NOT NULL);""")
     print("Tabel 'tbl_oefeningen' aangemaakt.")
 
 
@@ -38,10 +37,9 @@ def maakNieuweTabellen():
         CREATE TABLE IF NOT EXISTS tbl_Logboek(
         bestelRegel INTEGER PRIMARY KEY AUTOINCREMENT,
         klantNr INTEGER,
-        gerechtID INTEGER,
         aantal INTEGER NOT NULL,
         FOREIGN KEY (klantNr) REFERENCES tbl_klanten(klantNr)
-        FOREIGN KEY (gerechtID) REFERENCES tbl_oefeningen(gerechtID)
+        FOREIGN KEY (Oefeningen) REFERENCES tbl_oefeningen(Oefeningen)
         );""")
     print("Tabel 'tbl_Logboek' aangemaakt.")
 
@@ -60,7 +58,7 @@ def voegKlantenToe():
     printTabel("tbl_klanten")
     #db.commit() #gegevens naar de database wegschrijven
 
-def voegPizzasToe():
+def voegOefeningenToe():
     cursor.execute("INSERT INTO tbl_oefeningen VALUES(NULL, ?, ? )", ("Bench Press"))
     cursor.execute("INSERT INTO tbl_oefeningen VALUES(NULL, ?, ? )", ("Leg Press"))
     printTabel("tbl_oefeningen")

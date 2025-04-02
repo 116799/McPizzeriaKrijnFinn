@@ -31,9 +31,9 @@ def zoekKlant():
 
 
 #optionele opdracht:
-def zoekPizza():
-    listboxMenu.delete(0, END)  # maak de listbox voor de zekerheid leeg
-    listboxMenu.insert(0, "ID \t Gerecht \t \t Prijs") #print de kolomnamen af
+# def zoekPizza():
+#     listboxMenu.delete(0, END)  # maak de listbox voor de zekerheid leeg
+#     listboxMenu.insert(0, "ID \t Oefening") #print de kolomnamen af
 
     #haal de ingevoerde_pizzanaam op
     #     en gebruik dit om met SQL gerecht in database te vinden
@@ -42,20 +42,20 @@ def zoekPizza():
     #     listboxMenu.insert(END, rij) #toon die rij in de listbox
 
 
-def toonMenuInListbox():
-    listboxMenu.delete(0, END)  #maak de listbox leeg
-    listboxMenu.insert(0, "ID \t Gerecht \t \t Prijs")
-    pizza_tabel = MCPizzeriaSQL.vraagOpGegevensPizzaTabel()
-    for regel in pizza_tabel:
-        listboxMenu.insert(END, regel) #voeg elke regel uit resultaat in listboxMenu
+def toonOefeningenInListbox():
+    listboxOefeningen.delete(0, END)  #maak de listbox leeg
+    listboxOefeningen.insert(0, "ID \t Oefening")
+    Oefeningen_tabel = MCPizzeriaSQL.vraagOpGegevensOefeningenTabel()
+    for regel in Oefeningen_tabel:
+        listboxOefeningen.insert(END, regel) #voeg elke regel uit resultaat in listboxMenu
 
 
 ### functie voor het selecteren van een rij uit de listbox en deze in een andere veld te plaatsen
 def haalGeselecteerdeRijOp(event):
     #bepaal op welke regel er geklikt is
-    geselecteerdeRegelInLijst = listboxMenu.curselection()[0]
+    geselecteerdeRegelInLijst = listboxOefeningen.curselection()[0]
     #haal tekst uit die regel
-    geselecteerdeTekst = listboxMenu.get(geselecteerdeRegelInLijst)
+    geselecteerdeTekst = listboxOefeningen.get(geselecteerdeRegelInLijst)
     #verwijder tekst uit veld waar je in wilt schrijven, voor het geval er al iets staat
     invoerveldGeselecteerdeOefening.delete(0, END)
     #zet tekst in veld
@@ -67,11 +67,11 @@ def haalGeselecteerdeRijOp(event):
 #en toon de bestelling in de listbox op het scherm
 def voegToeAanLogboek():
     klantNr = invoerveldKlantNr.get()
-    gerechtID = geselecteerdeOefening.get()
+    Oefening = geselecteerdeOefening.get()
     aantalSets = aantalGeslecteerdeSets.get()
     Gewicht = aantalGewicht.get()
 
-    MCPizzeriaSQL.voegToeAanLogboek(klantNr, gerechtID, aantalSets, Gewicht )
+    MCPizzeriaSQL.voegToeAanLogboek(klantNr, Oefening, aantalSets, Gewicht )
 
     Logboek_tabel = MCPizzeriaSQL.vraagOpGegevensLogboekTabel()
 
@@ -112,26 +112,21 @@ knopZoekOpKlantnaam.grid(row=1, column=4)
 
 
 
+labellistboxOefeningen = Label(venster, text="Mogelijkheden:")
+labellistboxOefeningen.grid(row=5, column=0, sticky="W")# sticky="W" zorgt dat tekst links uitgelijnd wordt
 
-knopZoekOpPizzaNaam = Button(venster, text="Zoek pizza", width=12, command=zoekPizza)
-knopZoekOpPizzaNaam.grid(row=3, column=4)
-
-
-labellistboxMenu = Label(venster, text="Mogelijkheden:")
-labellistboxMenu.grid(row=4, column=0, sticky="W")# sticky="W" zorgt dat tekst links uitgelijnd wordt
-
-listboxMenu = Listbox(venster, height=6, width=45)
-listboxMenu.grid(row=4, column=1, rowspan=6, columnspan=2, sticky="W")
-listboxMenu.bind('<<ListboxSelect>>', haalGeselecteerdeRijOp)
+listboxOefeningen = Listbox(venster, height=6, width=45)
+listboxOefeningen.grid(row=5, column=1, rowspan=6, columnspan=2, sticky="W")
+listboxOefeningen.bind('<<ListboxSelect>>', haalGeselecteerdeRijOp)
 
 
-scrollbarlistboxMenu = Scrollbar(venster)
-scrollbarlistboxMenu.grid(row=4, column=2, rowspan=6, sticky="E")
-listboxMenu.config(yscrollcommand=scrollbarlistboxMenu.set)
-scrollbarlistboxMenu.config(command=listboxMenu.yview)
+scrollbarlistboxOefeningen = Scrollbar(venster)
+scrollbarlistboxOefeningen.grid(row=4, column=2, rowspan=6, sticky="E")
+listboxOefeningen.config(yscrollcommand=scrollbarlistboxOefeningen.set)
+scrollbarlistboxOefeningen.config(command=listboxOefeningen.yview)
 
-knopToonPizzas = Button(venster, text="Toon alle pizza's", width=12, command=toonMenuInListbox)
-knopToonPizzas.grid(row=4, column=4)
+knopToonPizzas = Button(venster, text="Toon alle oefeningen", width=12, command=toonOefeningenInListbox)
+knopToonPizzas.grid(row=5, column=4)
 
 labelinvoerveldSelecteerdeOefening = Label(venster, text="Gekozen Oefening:")
 labelinvoerveldSelecteerdeOefening.grid(row=11, column=0, sticky="W")
@@ -143,20 +138,20 @@ invoerveldGeselecteerdeOefening.grid(row=11, column=1, columnspan=2, sticky="W")
 
 ### KIES AANTAL VAN DE GESELECTEERDE PIZZA
 labelAantalSetsGeselecteerd = Label(venster, text="Aantal:")
-labelAantalSetsGeselecteerd.grid(row=13, column=0, sticky="W")
+labelAantalSetsGeselecteerd.grid(row=13, column=0, sticky="E")
 
 labelGewichtGeselecteerd = Label(venster, text="Gewicht (Kg):")
-labelGewichtGeselecteerd.grid(row=13, column=1, sticky="W")
+labelGewichtGeselecteerd.grid(row=13, column=1, sticky="E")
 
 aantalGewicht = IntVar() #het is een getal
 aantalGewicht.set(1) #eerste standaard waarde
 optionMenuGewichtAantal = OptionMenu(venster, aantalGewicht, 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80)
-optionMenuGewichtAantal.grid(row=14, column=1, sticky="n")
+optionMenuGewichtAantal.grid(row=13, column=2, sticky="w")
 
 aantalGeslecteerdeSets = IntVar() #het is een getal
 aantalGeslecteerdeSets.set(1) #eerste standaard waarde
 optionMenuSetsAantal = OptionMenu(venster, aantalGeslecteerdeSets, 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30)
-optionMenuSetsAantal.grid(row=13, column=0, sticky="E")
+optionMenuSetsAantal.grid(row=13, column=1, sticky="W")
 
 knopVoegToeAanLogboek = Button(venster, text="Voeg toe", width=12, command=voegToeAanLogboek)
 knopVoegToeAanLogboek.grid(row=13, column=4)
