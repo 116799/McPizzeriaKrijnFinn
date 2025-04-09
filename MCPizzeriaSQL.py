@@ -18,7 +18,6 @@ with sqlite3.connect("MCPizzeria.db") as db:
 ### ---------  Functie definities  -----------------
 
 def maakNieuweTabellen():
-    # Maak een nieuwe tabel met 3 kolommen: id, naam, prijs
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS tbl_oefeningen(
             oefeningID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -33,15 +32,15 @@ def maakNieuweTabellen():
         klantAchternaam TEXT);""")
     print("Tabel 'tbl_klanten' aangemaakt.")
 
-
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS tbl_Logboek(
-        bestelRegel INTEGER PRIMARY KEY AUTOINCREMENT,
+    CREATE TABLE IF NOT EXISTS tbl_Logboek(
+        logboekRegel INTEGER PRIMARY KEY AUTOINCREMENT,
         klantNr INTEGER,
+        oefeningID INTEGER,
         aantal INTEGER NOT NULL,
-        FOREIGN KEY (klantNr) REFERENCES tbl_klanten(klantNr)
-        FOREIGN KEY (Oefeningen) REFERENCES tbl_oefeningen(Oefeningen)
-        );""")
+        gewicht REAL,
+        FOREIGN KEY (klantNr) REFERENCES tbl_klanten(klantNr),
+        FOREIGN KEY (oefeningID) REFERENCES tbl_oefeningen(oefeningID));""")
     print("Tabel 'tbl_Logboek' aangemaakt.")
 
     db.commit() # update de database
@@ -94,17 +93,17 @@ def vraagOpGegevensOefeningenTabel():
     return resultaat
 
 #Zoek alle gegevens over pizza met ingevoerde naam
-def zoekOefening(ingevoerde_oefeingnaam):
-    cursor.execute("SELECT * FROM tbl_oefeningen WHERE gerechtNaam = ?", ( ingevoerde_oefeingnaam, ) )
+def zoekOefening(ingevoerde_oefeningnaam):
+    cursor.execute("SELECT * FROM tbl_oefeningen WHERE Oefening = ?", ( ingevoerde_oefeningnaam, ) )
     zoek_resultaat = cursor.fetchall()
     if zoek_resultaat == []: #resultaat is leeg, geen gerecht gevonden
-        print("Helaas, geen match gevonden met "+ ingevoerde_oefeingnaam)
+        print("Helaas, geen match gevonden met "+ ingevoerde_oefeningnaam)
     else:
-        print("Pizza gevonden: ", zoek_resultaat )
+        print("Oefening gevonden: ", zoek_resultaat )
     return zoek_resultaat
 
-def voegToeAanLogboek(klantNr, gerechtID, aantal):
-    cursor.execute("INSERT INTO tbl_Logboek VALUES(NULL, ?, ?, ?)", (klantNr, gerechtID, aantal,))
+def voegToeAanLogboek(klantNr, oefeningID, aantal, gewicht):
+    cursor.execute("INSERT INTO tbl_Logboek VALUES(NULL, ?, ?, ?, ?)", (klantNr, oefeningID, aantal, gewicht))
     db.commit() #gegevens naar de database wegschrijven
     printTabel("tbl_Logboek")
 
@@ -114,6 +113,15 @@ def vraagOpGegevensLogboekTabel():
     resultaat = cursor.fetchall()
     print("Tabel tbl_Logboek:", resultaat)
     return resultaat
+
+def geefLogboekVoorKlant (klantNr):
+    cursor.execute("""
+        SELECT tbl_Logboek.logboekRegel, tbl_oefeningen.Oefening, tbl_Logboek.aantal, tbl_Logboek.gewicht
+        FROM tbl_Logboek
+        JOIN tbl_oefeningen ON tbl_Logboek.oefeningID = tbl_oefeningen.oefeningID
+        WHERE tbl_Logboek.klantNr = ?""", 
+        (klantNr,))
+    return cursor.fetchall()
 
 
 ### --------- Hoofdprogramma  ----------------

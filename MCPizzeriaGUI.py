@@ -11,6 +11,8 @@ from tkinter import *
 import MCPizzeriaSQL
 
 
+
+
 ### --------- Functie definities  ----------------------
 
 def zoekKlant():
@@ -18,33 +20,26 @@ def zoekKlant():
     #     en gebruik dit om met SQL de klant in database te vinden
     gevonden_klanten = MCPizzeriaSQL.zoekKlantInTabel(ingevoerde_klantnaam.get())
 
-    print(gevonden_klanten) # om te testen
-    invoerveldKlantnaam.delete(0, END)  #invoerveld voor naam leeg maken
-    invoerveldKlantNr.delete(0, END)  #invoerveld voor klantNr leeg maken
+    invoerveldKlantnaam.delete(0, END)
+    invoerveldKlantNr.delete(0, END)
+    listboxLogboek.delete(0, END)
 
-    for rij in gevonden_klanten: #voor elke rij dat de query oplevert
-        #toon klantnummer, de eerste kolom uit het resultaat in de invoerveld
+    for rij in gevonden_klanten: 
         invoerveldKlantNr.insert(END, rij[0])
-
-        #toon klantAchternaam, de tweede kolom uit het resultaat in de invoerveld
         invoerveldKlantnaam.insert(END, rij[1])
 
-
-#optionele opdracht:
-# def zoekPizza():
-#     listboxMenu.delete(0, END)  # maak de listbox voor de zekerheid leeg
-#     listboxMenu.insert(0, "ID \t Oefening") #print de kolomnamen af
-
-    #haal de ingevoerde_pizzanaam op
-    #     en gebruik dit om met SQL gerecht in database te vinden
-    # gezochte_pizzas = MCPizzeriaSQL.zoekPizza( ingevoerde_pizzanaam.get() )
-    # for rij in gezochte_pizzas: #voor elke rij dat de query oplevert
-    #     listboxMenu.insert(END, rij) #toon die rij in de listbox
+    if gevonden_klanten:
+        klantNr = gevonden_klanten[0][0]
+        logboek_gegevens = MCPizzeriaSQL.geefLogboekVoorKlant(klantNr)
+        listboxLogboek.insert(0, "oefening\therhalingen\tGewicht")
+        for regel in logboek_gegevens:
+            _, oefening, aantal, gewicht = regel
+            listboxLogboek.insert (END, f"{oefening}\t{aantal}\t{gewicht} kg")
 
 
 def toonOefeningenInListbox():
     listboxOefeningen.delete(0, END)  #maak de listbox leeg
-    listboxOefeningen.insert(0, "ID \t Oefening")
+    listboxOefeningen.insert(0, "ID\tOefening\tSpiergroep")
     Oefeningen_tabel = MCPizzeriaSQL.vraagOpGegevensOefeningenTabel()
     for regel in Oefeningen_tabel:
         listboxOefeningen.insert(END, regel) #voeg elke regel uit resultaat in listboxMenu
@@ -67,25 +62,33 @@ def haalGeselecteerdeRijOp(event):
 #en toon de bestelling in de listbox op het scherm
 def voegToeAanLogboek():
     klantNr = invoerveldKlantNr.get()
-    Oefening = geselecteerdeOefening.get()
-    aantalSets = aantalGeslecteerdeSets.get()
+    oefening_string = geselecteerdeOefening.get()
+    if not oefening_string:
+        print("Selecteer eerst een oefening.")
+        return
+    
+    oefeningID = int(oefening_string.split()[0])
+    if not oefeningID:
+        print("Fout bij het ophalen van oefeningID.")
+        return
+
+    aantalSets = aantalGeslecteerdeHerhalingen.get()
     Gewicht = aantalGewicht.get()
 
-    MCPizzeriaSQL.voegToeAanLogboek(klantNr, Oefening, aantalSets, Gewicht )
-
-    Logboek_tabel = MCPizzeriaSQL.vraagOpGegevensLogboekTabel()
-
-    listboxLogboek.delete(0, END) #listbox eerst even leeg maken
-
-    for regel in Logboek_tabel:
-        listboxLogboek.insert(END, regel)
-
+    MCPizzeriaSQL.voegToeAanLogboek(klantNr, oefeningID, aantalSets, Gewicht )
+    
+    listboxLogboek.delete(0, END)
+    logboek_gegevens = MCPizzeriaSQL.geefLogboekVoorKlant(klantNr)
+    listboxLogboek.insert(0, "Oefening\tHerhalingen\tGewicht (kg)")
+    for regel in logboek_gegevens:
+        _, oefening, aantal, gewicht = regel
+        listboxLogboek.insert(END, f"{oefening}\t{aantal}\t{gewicht} kg")
 
 
 ### --------- Hoofdprogramma  ----------------
 venster = Tk()
-venster.wm_title("MC Pizzeria")
-#venster.iconbitmap("MC_icon.ico")
+venster.wm_title("MC Sport Database")
+venster.iconbitmap("MC_icon.ico")
 venster.config(bg="lightblue")
 
 labelIntro = Label(venster, text="Welkom!")
@@ -137,8 +140,8 @@ invoerveldGeselecteerdeOefening.grid(row=11, column=1, columnspan=2, sticky="W")
 
 
 ### KIES AANTAL VAN DE GESELECTEERDE PIZZA
-labelAantalSetsGeselecteerd = Label(venster, text="Aantal:")
-labelAantalSetsGeselecteerd.grid(row=13, column=0, sticky="E")
+labelAantalHerhalingenGeselecteerd = Label(venster, text="Aantal herhalingen:")
+labelAantalHerhalingenGeselecteerd.grid(row=13, column=0, sticky="E")
 
 labelGewichtGeselecteerd = Label(venster, text="Gewicht (Kg):")
 labelGewichtGeselecteerd.grid(row=13, column=1, sticky="E")
@@ -148,10 +151,10 @@ aantalGewicht.set(1) #eerste standaard waarde
 optionMenuGewichtAantal = OptionMenu(venster, aantalGewicht, 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80)
 optionMenuGewichtAantal.grid(row=13, column=2, sticky="w")
 
-aantalGeslecteerdeSets = IntVar() #het is een getal
-aantalGeslecteerdeSets.set(1) #eerste standaard waarde
-optionMenuSetsAantal = OptionMenu(venster, aantalGeslecteerdeSets, 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30)
-optionMenuSetsAantal.grid(row=13, column=1, sticky="W")
+aantalGeslecteerdeHerhalingen = IntVar() #het is een getal
+aantalGeslecteerdeHerhalingen.set(1) #eerste standaard waarde
+optionMenuHerhalingenAantal = OptionMenu(venster, aantalGeslecteerdeHerhalingen, 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30)
+optionMenuHerhalingenAantal.grid(row=13, column=1, sticky="W")
 
 knopVoegToeAanLogboek = Button(venster, text="Voeg toe", width=12, command=voegToeAanLogboek)
 knopVoegToeAanLogboek.grid(row=13, column=4)
@@ -163,7 +166,6 @@ labellistboxLogboek.grid(row=15, column=0, sticky="W")# zorgt dat tekst links ui
 
 listboxLogboek = Listbox(venster, height=6, width=45)
 listboxLogboek.grid(row=15, column=1, rowspan=4, columnspan=2, sticky="W")
-listboxLogboek.bind('<<ListboxSelect>>')
 
 knopSluit = Button(venster, text="Sluiten",width=12,command=venster.destroy)
 knopSluit.grid(row=18, column = 4)
