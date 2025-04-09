@@ -21,8 +21,9 @@ def maakNieuweTabellen():
     # Maak een nieuwe tabel met 3 kolommen: id, naam, prijs
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS tbl_oefeningen(
-            gerechtID INTEGER PRIMARY KEY AUTOINCREMENT,
-            Oefening TEXT NOT NULL);""")
+            oefeningID INTEGER PRIMARY KEY AUTOINCREMENT,
+            Oefening TEXT NOT NULL,
+            Spiergroep TEXT);""")
     print("Tabel 'tbl_oefeningen' aangemaakt.")
 
 
@@ -43,7 +44,7 @@ def maakNieuweTabellen():
         );""")
     print("Tabel 'tbl_Logboek' aangemaakt.")
 
-    #db.commit() # update de database
+    db.commit() # update de database
 
 
 def printTabel(tabel_naam):
@@ -56,13 +57,13 @@ def voegKlantenToe():
     cursor.execute("INSERT INTO tbl_klanten VALUES(NULL, ?)", ("Janssen",))
     cursor.execute("INSERT INTO tbl_klanten VALUES(NULL, ?)", ("Smit",))
     printTabel("tbl_klanten")
-    #db.commit() #gegevens naar de database wegschrijven
+    db.commit() #gegevens naar de database wegschrijven
 
 def voegOefeningenToe():
-    cursor.execute("INSERT INTO tbl_oefeningen VALUES(NULL, ?, ? )", ("Bench Press"))
-    cursor.execute("INSERT INTO tbl_oefeningen VALUES(NULL, ?, ? )", ("Leg Press"))
+    cursor.execute("INSERT INTO tbl_oefeningen VALUES(NULL, ?, ? )", ("Bench Press","Borst"))
+    cursor.execute("INSERT INTO tbl_oefeningen VALUES(NULL, ?, ? )", ("Leg Press", "Benen"))
     printTabel("tbl_oefeningen")
-    #db.commit() #gegevens naar de database wegschrijven
+    db.commit() #gegevens naar de database wegschrijven
 
 
 #Zoek alle gegevens over klant met ingevoerde naam
@@ -86,18 +87,18 @@ def zoekKlantInTabel(ingevoerde_klantnaam):
     return zoek_resultaat
 
 
-def vraagOpGegevensPizzaTabel():
+def vraagOpGegevensOefeningenTabel():
     cursor.execute("SELECT * FROM tbl_oefeningen")
     resultaat = cursor.fetchall()
     print("Tabel tbl_oefeningen:", resultaat)
     return resultaat
 
 #Zoek alle gegevens over pizza met ingevoerde naam
-def zoekPizza(ingevoerde_pizzanaam):
-    cursor.execute("SELECT * FROM tbl_oefeningen WHERE gerechtNaam = ?", ( ingevoerde_pizzanaam, ) )
+def zoekOefening(ingevoerde_oefeingnaam):
+    cursor.execute("SELECT * FROM tbl_oefeningen WHERE gerechtNaam = ?", ( ingevoerde_oefeingnaam, ) )
     zoek_resultaat = cursor.fetchall()
     if zoek_resultaat == []: #resultaat is leeg, geen gerecht gevonden
-        print("Helaas, geen match gevonden met "+ ingevoerde_pizzanaam)
+        print("Helaas, geen match gevonden met "+ ingevoerde_oefeingnaam)
     else:
         print("Pizza gevonden: ", zoek_resultaat )
     return zoek_resultaat
@@ -117,7 +118,7 @@ def vraagOpGegevensLogboekTabel():
 
 ### --------- Hoofdprogramma  ----------------
 maakNieuweTabellen()
-# voegPizzasToe()
-# voegKlantenToe()
+voegOefeningenToe()
+voegKlantenToe()
 
 
