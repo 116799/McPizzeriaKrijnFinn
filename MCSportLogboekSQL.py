@@ -16,6 +16,8 @@ with sqlite3.connect("MCPizzeria.db") as db:
 
 
 ### ---------  Functie definities  -----------------
+#reset de tabellen
+cursor.execute("DROP TABLE IF EXISTS tbl_oefeningen")
 
 def maakNieuweTabellen():
     cursor.execute("""
@@ -43,6 +45,11 @@ def maakNieuweTabellen():
         FOREIGN KEY (oefeningID) REFERENCES tbl_oefeningen(oefeningID));""")
     print("Tabel 'tbl_Logboek' aangemaakt.")
 
+    try:
+        cursor.execute("ALTER TABLE tbl_Logboek ADD COLUMN datum TEXT")
+    except sqlite3.OperationalError:
+        pass
+
     db.commit() # update de database
 
 
@@ -53,16 +60,27 @@ def printTabel(tabel_naam):
 
 
 def voegKlantenToe():
-    cursor.execute("INSERT INTO tbl_klanten VALUES(NULL, ?)", ("Janssen",))
-    cursor.execute("INSERT INTO tbl_klanten VALUES(NULL, ?)", ("Smit",))
+    klanten = ["Janssen", "Smit"]
+    for achternaam in klanten:
+        cursor.execute("SELECT * FROM tbl_klanten WHERE klantAchternaam = ?", (achternaam,))
+        if cursor.fetchone() is None:
+            cursor.execute("INSERT INTO tbl_klanten VALUES(NULL, ?)", (achternaam,))
+    db.commit()
     printTabel("tbl_klanten")
-    db.commit() #gegevens naar de database wegschrijven
+
 
 def voegOefeningenToe():
-    cursor.execute("INSERT INTO tbl_oefeningen VALUES(NULL, ?, ? )", ("Bench Press","Borst"))
-    cursor.execute("INSERT INTO tbl_oefeningen VALUES(NULL, ?, ? )", ("Leg Press", "Benen"))
+    oefeningen = [
+        ("Bench Press", "Borst"),
+        ("Leg Press", "Benen")
+        ]
+    for oefening, spiergroep in oefeningen:
+        cursor.execute("SELECT * FROM tbl_oefeningen WHERE Oefening = ?", (oefening,))
+        if cursor.fetchone() is None:
+            cursor.execute("INSERT INTO tbl_oefeningen VALUES(NULL, ?, ?)", (oefening, spiergroep))
+    db.commit()
     printTabel("tbl_oefeningen")
-    db.commit() #gegevens naar de database wegschrijven
+
 
 
 #Zoek alle gegevens over klant met ingevoerde naam
@@ -102,10 +120,9 @@ def zoekOefening(ingevoerde_oefeningnaam):
         print("Oefening gevonden: ", zoek_resultaat )
     return zoek_resultaat
 
-def voegToeAanLogboek(klantNr, oefeningID, aantal, gewicht):
-    cursor.execute("INSERT INTO tbl_Logboek VALUES(NULL, ?, ?, ?, ?)", (klantNr, oefeningID, aantal, gewicht))
+def voegToeAanLogboek(klantNr, oefeningID, aantal, gewicht, datum):
+    cursor.execute("INSERT INTO tbl_Logboek VALUES(NULL, ?, ?, ?, ?, ?)", (klantNr, oefeningID, aantal, gewicht, datum))
     db.commit() #gegevens naar de database wegschrijven
-    printTabel("tbl_Logboek")
 
 
 def vraagOpGegevensLogboekTabel():
@@ -114,19 +131,18 @@ def vraagOpGegevensLogboekTabel():
     print("Tabel tbl_Logboek:", resultaat)
     return resultaat
 
-def geefLogboekVoorKlant (klantNr):
+def geefLogboekVoorKlant(klantNr):
     cursor.execute("""
-        SELECT tbl_Logboek.logboekRegel, tbl_oefeningen.Oefening, tbl_Logboek.aantal, tbl_Logboek.gewicht
+        SELECT tbl_Logboek.logboekRegel, tbl_oefeningen.Oefening, tbl_Logboek.aantal, tbl_Logboek.gewicht, tbl_Logboek.datum
         FROM tbl_Logboek
         JOIN tbl_oefeningen ON tbl_Logboek.oefeningID = tbl_oefeningen.oefeningID
-        WHERE tbl_Logboek.klantNr = ?""", 
-        (klantNr,))
+        WHERE tbl_Logboek.klantNr = ?
+    """, (klantNr,))
     return cursor.fetchall()
+
 
 
 ### --------- Hoofdprogramma  ----------------
 maakNieuweTabellen()
 voegOefeningenToe()
 voegKlantenToe()
-
-

@@ -8,7 +8,7 @@
 
 ### --------- Bibliotheken en globale variabelen -----------------
 from tkinter import *
-import MCPizzeriaSQL
+import MCSportLogboekSQL
 
 
 
@@ -18,11 +18,21 @@ import MCPizzeriaSQL
 def zoekKlant():
     #haal de ingevoerde_klantnaam op uit het invoerveld
     #     en gebruik dit om met SQL de klant in database te vinden
-    gevonden_klanten = MCPizzeriaSQL.zoekKlantInTabel(ingevoerde_klantnaam.get())
+    gevonden_klanten = MCSportLogboekSQL.zoekKlantInTabel(ingevoerde_klantnaam.get())
 
     invoerveldKlantnaam.delete(0, END)
     invoerveldKlantNr.delete(0, END)
+    invoerveldGeselecteerdeOefening.delete(0, END)
     listboxLogboek.delete(0, END)
+
+    ingevoerd_gewicht.set(0)
+    aantalGeslecteerdeHerhalingen.set(0)
+
+    listboxOefeningen.delete(0, END)
+    listboxOefeningen.insert(0, "ID\tOefening\tSpiergroep")
+    oefeningen = MCSportLogboekSQL.vraagOpGegevensOefeningenTabel()
+    for regel in oefeningen:
+        listboxOefeningen.insert(END, regel)
 
     for rij in gevonden_klanten: 
         invoerveldKlantNr.insert(END, rij[0])
@@ -30,7 +40,7 @@ def zoekKlant():
 
     if gevonden_klanten:
         klantNr = gevonden_klanten[0][0]
-        logboek_gegevens = MCPizzeriaSQL.geefLogboekVoorKlant(klantNr)
+        logboek_gegevens = MCSportLogboekSQL.geefLogboekVoorKlant(klantNr)
         listboxLogboek.insert(0, "oefening\therhalingen\tGewicht")
         for regel in logboek_gegevens:
             _, oefening, aantal, gewicht = regel
@@ -40,7 +50,7 @@ def zoekKlant():
 def toonOefeningenInListbox():
     listboxOefeningen.delete(0, END)  #maak de listbox leeg
     listboxOefeningen.insert(0, "ID\tOefening\tSpiergroep")
-    Oefeningen_tabel = MCPizzeriaSQL.vraagOpGegevensOefeningenTabel()
+    Oefeningen_tabel = MCSportLogboekSQL.vraagOpGegevensOefeningenTabel()
     for regel in Oefeningen_tabel:
         listboxOefeningen.insert(END, regel) #voeg elke regel uit resultaat in listboxMenu
 
@@ -57,9 +67,7 @@ def haalGeselecteerdeRijOp(event):
     invoerveldGeselecteerdeOefening.insert(0, geselecteerdeTekst)
 
 
-#voeg de bestelling van klant met gekozen pizza en aantal toe
-#in de winkelwagentabel
-#en toon de bestelling in de listbox op het scherm
+
 def voegToeAanLogboek():
     klantNr = invoerveldKlantNr.get()
     oefening_string = geselecteerdeOefening.get()
@@ -67,22 +75,38 @@ def voegToeAanLogboek():
         print("Selecteer eerst een oefening.")
         return
     
-    oefeningID = int(oefening_string.split()[0])
-    if not oefeningID:
+    try:
+        oefeningID = int(oefening_string.split()[0])  # eerste getal uit string
+    except ValueError:
         print("Fout bij het ophalen van oefeningID.")
         return
 
     aantalSets = aantalGeslecteerdeHerhalingen.get()
-    Gewicht = aantalGewicht.get()
+    Gewicht = float(ingevoerd_gewicht.get())
+    if not ValueError:
+        print("Ongeldig gewicht")
+        return
 
-    MCPizzeriaSQL.voegToeAanLogboek(klantNr, oefeningID, aantalSets, Gewicht )
+    from datetime import date
+    datum_input = ingevoerde_datum.get().strip()
+    if datum_input == "":
+        datum = date.today().isoformat()
+    else:
+        datum = datum_input
+
+    MCSportLogboekSQL.voegToeAanLogboek(klantNr, oefeningID, aantalSets, Gewicht, datum)
     
     listboxLogboek.delete(0, END)
-    logboek_gegevens = MCPizzeriaSQL.geefLogboekVoorKlant(klantNr)
+    logboek_gegevens = MCSportLogboekSQL.geefLogboekVoorKlant(klantNr)
     listboxLogboek.insert(0, "Oefening\tHerhalingen\tGewicht (kg)")
     for regel in logboek_gegevens:
-        _, oefening, aantal, gewicht = regel
-        listboxLogboek.insert(END, f"{oefening}\t{aantal}\t{gewicht} kg")
+        _, oefening, aantal, gewicht, datum = regel
+        listboxLogboek.insert(END, f"{datum}\t{oefening}\t{aantal}\t{gewicht} kg")
+
+    datum = ingevoerde_datum.get().strip()
+    if datum == "":
+        from datetime import date
+        datum = date.today().isoformat()  # Vul automatisch vandaag in
 
 
 ### --------- Hoofdprogramma  ----------------
@@ -114,7 +138,6 @@ knopZoekOpKlantnaam = Button(venster, text="Zoek klant", width=12, command=zoekK
 knopZoekOpKlantnaam.grid(row=1, column=4)
 
 
-
 labellistboxOefeningen = Label(venster, text="Mogelijkheden:")
 labellistboxOefeningen.grid(row=5, column=0, sticky="W")# sticky="W" zorgt dat tekst links uitgelijnd wordt
 
@@ -128,8 +151,8 @@ scrollbarlistboxOefeningen.grid(row=4, column=2, rowspan=6, sticky="E")
 listboxOefeningen.config(yscrollcommand=scrollbarlistboxOefeningen.set)
 scrollbarlistboxOefeningen.config(command=listboxOefeningen.yview)
 
-knopToonPizzas = Button(venster, text="Toon alle oefeningen", width=12, command=toonOefeningenInListbox)
-knopToonPizzas.grid(row=5, column=4)
+knopToonAlleOefeningen = Button(venster, text="Toon alle oefeningen", width=12, command=toonOefeningenInListbox)
+knopToonAlleOefeningen.grid(row=5, column=4)
 
 labelinvoerveldSelecteerdeOefening = Label(venster, text="Gekozen Oefening:")
 labelinvoerveldSelecteerdeOefening.grid(row=11, column=0, sticky="W")
@@ -138,18 +161,24 @@ geselecteerdeOefening= StringVar()
 invoerveldGeselecteerdeOefening = Entry(venster, textvariable=geselecteerdeOefening)
 invoerveldGeselecteerdeOefening.grid(row=11, column=1, columnspan=2, sticky="W")
 
+ingevoerde_datum = StringVar()
+labelDatum = Label(venster, text="Datum (YYYY-MM-DD):")
+labelDatum.grid(row=14, column=0, sticky="W")
+
+invoerveldDatum = Entry(venster, textvariable=ingevoerde_datum)
+invoerveldDatum.grid(row=14, column=1, columnspan=2, sticky="w")
+
 
 ### KIES AANTAL VAN DE GESELECTEERDE PIZZA
 labelAantalHerhalingenGeselecteerd = Label(venster, text="Aantal herhalingen:")
-labelAantalHerhalingenGeselecteerd.grid(row=13, column=0, sticky="E")
+labelAantalHerhalingenGeselecteerd.grid(row=13, column=0, sticky="W")
 
 labelGewichtGeselecteerd = Label(venster, text="Gewicht (Kg):")
 labelGewichtGeselecteerd.grid(row=13, column=1, sticky="E")
 
-aantalGewicht = IntVar() #het is een getal
-aantalGewicht.set(1) #eerste standaard waarde
-optionMenuGewichtAantal = OptionMenu(venster, aantalGewicht, 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80)
-optionMenuGewichtAantal.grid(row=13, column=2, sticky="w")
+ingevoerd_gewicht = StringVar()
+invoerveldGewicht = Entry(venster, textvariable=ingevoerd_gewicht)
+invoerveldGewicht.grid(row=13, column=2, sticky="w")
 
 aantalGeslecteerdeHerhalingen = IntVar() #het is een getal
 aantalGeslecteerdeHerhalingen.set(1) #eerste standaard waarde
@@ -169,13 +198,6 @@ listboxLogboek.grid(row=15, column=1, rowspan=4, columnspan=2, sticky="W")
 
 knopSluit = Button(venster, text="Sluiten",width=12,command=venster.destroy)
 knopSluit.grid(row=18, column = 4)
-
-
-# fotoPad = "fotoPepperoni.png"
-#
-# padFotoGeselecteerdePizza = PhotoImage(file=fotoPad)
-# fotoPizza = Label(venster, width=100, height=100, image=padFotoGeselecteerdePizza)
-# fotoPizza.grid(row=18, column=0, columnspan=2, sticky="W")
 
 
 #reageert op gebruikersinvoer, deze regel als laatste laten staan
