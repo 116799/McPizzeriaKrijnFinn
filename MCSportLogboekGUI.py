@@ -41,10 +41,10 @@ def zoekKlant():
     if gevonden_klanten:
         klantNr = gevonden_klanten[0][0]
         logboek_gegevens = MCSportLogboekSQL.geefLogboekVoorKlant(klantNr)
-        listboxLogboek.insert(0, "oefening\therhalingen\tGewicht")
+        listboxLogboek.insert(0, "Datum\tOefening\tHerhalingen\tGewicht")
         for regel in logboek_gegevens:
-            _, oefening, aantal, gewicht = regel
-            listboxLogboek.insert (END, f"{oefening}\t{aantal}\t{gewicht} kg")
+            _, oefening, aantal, gewicht, datum = regel
+            listboxLogboek.insert (END, f"{datum}{oefening}{aantal}{gewicht} kg")
 
 
 def toonOefeningenInListbox():
@@ -87,12 +87,28 @@ def voegToeAanLogboek():
         print("Ongeldig gewicht")
         return
 
-    from datetime import date
+    from datetime import date, datetime
+
     datum_input = ingevoerde_datum.get().strip()
+
+    # Als het veld leeg is gebruik vandaag
     if datum_input == "":
         datum = date.today().isoformat()
     else:
-        datum = datum_input
+        try:
+            ingevoerde_datum_obj = datetime.strptime(datum_input, "%Y-%m-%d").date()
+            vandaag = date.today()
+
+            if ingevoerde_datum_obj > vandaag:
+                print("Je kunt geen datum in de toekomst invullen.")
+                return  # Stop de functie, sla niets op
+
+            datum = ingevoerde_datum_obj.isoformat()  # Correcte datum, opslaan
+
+        except ValueError:
+            print("Ongeldige datum. Gebruik formaat: JJJJ-MM-DD (bijv. 2024-04-18).") 
+            return  # Stop de functie als de datum ongeldig is
+
 
     MCSportLogboekSQL.voegToeAanLogboek(klantNr, oefeningID, aantalSets, Gewicht, datum)
     
@@ -102,11 +118,6 @@ def voegToeAanLogboek():
     for regel in logboek_gegevens:
         _, oefening, aantal, gewicht, datum = regel
         listboxLogboek.insert(END, f"{datum}\t{oefening}\t{aantal}\t{gewicht} kg")
-
-    datum = ingevoerde_datum.get().strip()
-    if datum == "":
-        from datetime import date
-        datum = date.today().isoformat()  # Vul automatisch vandaag in
 
 
 ### --------- Hoofdprogramma  ----------------
@@ -181,8 +192,8 @@ invoerveldGewicht = Entry(venster, textvariable=ingevoerd_gewicht)
 invoerveldGewicht.grid(row=13, column=2, sticky="w")
 
 aantalGeslecteerdeHerhalingen = IntVar() #het is een getal
-aantalGeslecteerdeHerhalingen.set(1) #eerste standaard waarde
-optionMenuHerhalingenAantal = OptionMenu(venster, aantalGeslecteerdeHerhalingen, 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30)
+aantalGeslecteerdeHerhalingen.set(0) #eerste standaard waarde
+optionMenuHerhalingenAantal = OptionMenu(venster, aantalGeslecteerdeHerhalingen, 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40)
 optionMenuHerhalingenAantal.grid(row=13, column=1, sticky="W")
 
 knopVoegToeAanLogboek = Button(venster, text="Voeg toe", width=12, command=voegToeAanLogboek)
@@ -190,11 +201,15 @@ knopVoegToeAanLogboek.grid(row=13, column=4)
 
 
 labellistboxLogboek = Label(venster, text="logboek:")
-labellistboxLogboek.grid(row=15, column=0, sticky="W")# zorgt dat tekst links uitgelijnd wordt
-
+labellistboxLogboek.grid(row=15, column=0, sticky="W")
 
 listboxLogboek = Listbox(venster, height=6, width=45)
 listboxLogboek.grid(row=15, column=1, rowspan=4, columnspan=2, sticky="W")
+
+scrollbarlistboxLogboek = Scrollbar(venster)
+scrollbarlistboxLogboek.grid(row=16, column=2, rowspan=4, sticky="E")
+listboxLogboek.config(yscrollcommand=scrollbarlistboxLogboek.set)
+scrollbarlistboxLogboek.config(command=listboxLogboek.yview)
 
 knopSluit = Button(venster, text="Sluiten",width=12,command=venster.destroy)
 knopSluit.grid(row=18, column = 4)

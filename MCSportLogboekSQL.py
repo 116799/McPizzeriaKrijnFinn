@@ -66,7 +66,6 @@ def voegKlantenToe():
         if cursor.fetchone() is None:
             cursor.execute("INSERT INTO tbl_klanten VALUES(NULL, ?)", (achternaam,))
     db.commit()
-    printTabel("tbl_klanten")
 
 
 def voegOefeningenToe():
@@ -79,7 +78,6 @@ def voegOefeningenToe():
         if cursor.fetchone() is None:
             cursor.execute("INSERT INTO tbl_oefeningen VALUES(NULL, ?, ?)", (oefening, spiergroep))
     db.commit()
-    printTabel("tbl_oefeningen")
 
 
 
